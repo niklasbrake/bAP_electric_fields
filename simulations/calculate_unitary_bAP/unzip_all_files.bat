@@ -1,0 +1,1 @@
+for /r %i in (*) do tar -xf %i -C E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\other_code\neuron_models
