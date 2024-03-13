@@ -15,7 +15,7 @@ prop = scaledAbundance(J);
 F = cumsum(prop)/sum(prop);
 [~,idcs] = unique(F);
 m = length(J);
-n = 200;
+n = 100;
 r = rand(2,n);
 
 R_xx = zeros(4001,n); R_yx = zeros(4001,n); R_zx = zeros(4001,n);
@@ -25,9 +25,7 @@ R_xz = zeros(4001,n); R_yz = zeros(4001,n); R_zz = zeros(4001,n);
 R11 = zeros(3,3,n);
 R22 = zeros(3,3,n);
 
-h = waitbar(0);
 for count = 1:n
-    update_waitbar(h,count,n)
     bs_sample = interp1(F(idcs),idcs,r(:,count),'next','extrap');
     i = bs_sample(1);
     j = bs_sample(2);
@@ -58,8 +56,6 @@ R(2,3,:,:) = R_yz';
 R(3,1,:,:) = R_zx';
 R(3,2,:,:) = R_zy';
 R(3,3,:,:) = R_zz';
-
-RRR(:,:,count) = R(:,:,count,2001)./sqrt(diag(R11(:,:,count)).*diag(R22(:,:,count))');
 
 R2 = R;
 for count = 1:n
