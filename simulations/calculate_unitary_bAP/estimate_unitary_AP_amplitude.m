@@ -10,33 +10,6 @@ for i = 1:length(ID)
     abundance(i) = mtype_abundance(ID{i},:).Abundance;
 end
 
-
-% pEst = var(savedUnitaryAP)*2001/16*1e-3;
-
-% load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_dipole.mat');
-fs = 16e3;
-idcs = sa.cortex2K.in_from_cortex75K;
-% V = zeros(length(idcs),size(savedUnitaryAP,3));
-m = size(savedUnitaryAP,3);
-psd_unit = zeros(8001,m);
-N = length(idcs);
-n = fs;
-freq = fs/n:fs/n:fs/2;
-for i = 1:N
-    waitbar(i/N)
-    eeg = network_simulation_beluga.getEEG(savedUnitaryAP,sa,idcs(i));
-    % V(i,:) = var(eeg)*size(eeg,1)/fs;
-
-    paddedAP = [zeros(7e3,m);eeg;zeros(7e3-1,m)];
-    xdft = fft(paddedAP);
-    xdft = xdft(2:n/2+1,:);
-    psdx = (1/(fs*n)) * abs(xdft).^2;
-    psdx(1:end-1,:) = 2*psdx(1:end-1,:);
-
-    psd_unit = psd_unit+psdx/N;
-end
-
-
 m_pEst = splitapply(@(x) nanmean(x,2),pEst,J(:)');
 s0_pEst = splitapply(@(x) -1.96*stderror(x')+nanmean(x,2),pEst,J(:)');
 s1_pEst = splitapply(@(x) 1.96*stderror(x')+nanmean(x,2),pEst,J(:)');
@@ -56,7 +29,7 @@ end
 
 
 % Bootstrap average (e-cells)
-idcs0 = find(~ei_type);
+idcs0 = find(ei_type);
 prop = scaledAbundance(J);
 prop = prop(idcs0);
 F = cumsum(prop)/sum(prop);
@@ -69,7 +42,7 @@ for i = 1:1e3
 end
 
 % Bootstrap average (i-cells)
-idcs0 = find(ei_type);
+idcs0 = find(~ei_type);
 prop = scaledAbundance(J);
 prop = prop(idcs0);
 F = cumsum(prop)/sum(prop);
@@ -80,6 +53,11 @@ for i = 1:1e3
     bs_sample = interp1(F(idcs),idcs0(idcs),R(:,i),'next','extrap');
     ibootstrap_Est(i) = nanmean(pEst(bs_sample));
 end
+
+
+fprintf('Excitatory cell uAP energy: %.1f +/- %.1f zV^2\n',10.^(log10(mean(ebootstrap_Est))+15),10.^(log10(std(ebootstrap_Est))+15))
+
+fprintf('Inhibitory cell uAP energy: %.1f +/- %.1f zV^2\n',10.^(log10(mean(ibootstrap_Est))+15),10.^(log10(std(ibootstrap_Est))+15))
 
 figureNB(30,15);
     bar(m_pEst,'EdgeColor','k','FaceColor','k');
