@@ -9,52 +9,19 @@ EI_vec = {'01','1.5','2.1','3.1','4.5','6.6','9.7','14.1','20.6','30'};
 iCtx = 16e3;
 
 % i = 46;
-% i=50;
+i=50;
 % 21    35    59
-i=59;
+% i=59;
 % i = 48;
 folder0 = fullfile(folder,F(i).name,'matlab_recordings');
 clrs = flipud(jet(10));
 
 N = zeros(length(EI_vec),1);
+fs = 16e3;
 psd_active = [];
 psd_passive = [];
 figureNB;
-meanAP = [];
-for k = 1:length(EI_vec)
-    load(fullfile(folder0,sprintf('synaptic_input_EI%s_passive.mat',EI_vec{k})))
-    eeg = network_simulation_beluga.getEEG(dipoles,sa,iCtx);
-    [f,~,psd] = eegfft(time*1e-3,detrend(eeg),0.5,0.4);
-    psd_passive(:,k) = mean(psd,2);
-    % Y = detrend(eeg(32001:end),'constant');
-    % [psd_passive(:,k),f] = pmtm(Y,2,[],16e3);
 
-    load(fullfile(folder0,sprintf('synaptic_input_EI%s.mat',EI_vec{k})))
-    eeg = network_simulation_beluga.getEEG(dipoles,sa,iCtx);
-    % Y = detrend(eeg(32001:end),'constant');
-    % [psd_active(:,k),f] = pmtm(Y,2,[],16e3);
-    % [freq,~,psd] = eegfft(time*1e-3,eeg,0.5,0.4);
-    [f,~,psd] = eegfft(time*1e-3,detrend(eeg),0.5,0.4);
-    % psd_active(:,k) = interp1(freq,mean(psd,2),f,'linear','extrap');
-    psd_active(:,k) = mean(psd,2);
-    [y,x] = findpeaks(voltage,'MinPeakHeight',0);
-    x = x(x>0);
-    N(k) = sum(x>0);
-    if(N(k)==0)
-        continue;
-    end
-    [~,I] = min(N(N>0));
-    unitaryAP = zeros(1,2001);
-    for j = 1:length(x)
-        idcs = max(min(x(j)-1e3:x(j)+1e3,length(eeg)),1);
-        y = eeg(idcs);
-        y(idcs==1) = 0;
-        y(idcs==length(eeg)) = 0;
-        unitaryAP(j,:) = y;
-    end
-    unitaryAP = unitaryAP-median(unitaryAP,2);
-    meanAP = [meanAP;unitaryAP];
-end
 
 firingFrequency = N(:)/range(time)*1e3;
 
@@ -123,8 +90,8 @@ subplot(2,2,4);
 
 B2 = zeros(10,1);
 X0 = mean(psd_passive,2);
-figureNB(24,9);
-for k = 1:10
+figureNB(12,5);
+for k = 1:6
     if(N(k)>0)
         % X1 = psd(:,k);
         X1 = psd_unit;
@@ -135,30 +102,32 @@ for k = 1:10
         B2(k) = 0;
     end
     % B2(k) = N(k)/2;
-    subplot(2,5,k)
-    plot(psd_active(:,k),'color','k')
+    subplot(2,3,k)
+    plot(psd_passive(:,k),'color',[0.6,0.6,0.6],'LineWidth',1)
     hold on;
-    plot(psd_passive(:,k),'color',[0.6,0.6,0.6])
+    plot(psd_active(:,k),'color','k','LineWidth',1)
     plot(B2(k)*X1,'color','b','LineWidth',2)
     set(gca,'xscale','log')
     xlim([1,2e3])
-    % ylim([1e-20,1e-14]);
+    ylim([1e-25,1e-14]);
+    yticks([1e-25,1e-20,1e-15])
     set(gca,'yscale','log')
-    title(sprintf('%d Hz',round(firingFrequency(k))))
+    title(sprintf('%.1f Hz',firingFrequency(k)))
     xticks([1,10,100,1000])
-    xticklabels([1,10,100,1000])
+    % xticklabels([1,10,100,1000])
     xlabel('Frequency (Hz)')
     ylabel(['Power (' char(956) 'V^2/Hz)'])
     gcaformat;
 end
 
 m = ceil(max([firingFrequency;B2]));
-figureNB;
-    plot(firingFrequency,B2,'xk','MarkerSize',20,'LineWidth',5)
-    line([0,m],[0,m],'color','r','LineWidth',2)
+figureNB(5,5);
+    plot(firingFrequency,B2,'xk','MarkerSize',10,'LineWidth',2)
+    line([0,m],[0,m],'color','r','LineWidth',1)
     xlabel('Firing frequency (Hz)')
-    ylabel('\beta_1')
-    gcaformat(gca,false)
+    % ylabel('\beta_1')
+    ylabel('apEEG scaling factor')
+    gcaformat(gca)
 
 %{
 figureNB;

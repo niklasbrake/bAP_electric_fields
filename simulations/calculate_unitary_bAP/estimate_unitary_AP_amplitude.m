@@ -150,18 +150,73 @@ figureNB;
 
 
 
-for i = 1:5
-    idcs = find(and(I==i,ei_type==0));
-    x(2*(i-1)+1) = 3*(i-1);
-    y{2*(i-1)+1} = log10(pEst(idcs))
+i0 = find(strcmp(ID,'L6_UTPC'))
+i1 = find(strcmp(ID,'L6_NBC'))
+    temp1 = J(i0);
+    temp2 = pEst(i0);
+    temp3 = ID(i0);
+    temp4 = abundance(i0);
+    J(i0) = J(i1);
+    pEst(i0) = pEst(i1);
+    ID(i0) = ID(i1);
+    abundance(i0) = abundance(i1);
+    J(i1) = temp1;
+    pEst(i1) = temp2;
+    ID(i1) = temp3;
+    abundance(i1) = temp4;
 
-    idcs = find(and(I==i,ei_type==1));
-    x(2*(i-1)+2) = 3*(i-1)+1;
-    y{2*(i-1)+2} = log10(pEst(idcs))
 
-    clrs(2*(i-1)+1,:) = [0,0,1];
-    clrs(2*(i-1)+2,:) = [1,0,0];
-end
-x = x([1,3:end]);
-y = y([1,3:end]);
-clrs = clrs([1,3:end],:);
+i0 = find(strcmp(ID,'L6_TPC_L4'));
+i1 = find(strcmp(ID,'L6_NBC'))
+    temp1 = J(i0);
+    temp2 = pEst(i0);
+    temp3 = ID(i0);
+    temp4 = abundance(i0);
+    J(i0) = J(i1);
+    pEst(i0) = pEst(i1);
+    ID(i0) = ID(i1);
+    abundance(i0) = abundance(i1);
+    J(i1) = temp1;
+    pEst(i1) = temp2;
+    ID(i1) = temp3;
+    abundance(i1) = temp4;
+
+i0 = find(strcmp(ID,'L5_TTPC1'))
+i1 = find(strcmp(ID,'L5_NBC'))
+    temp1 = J(i0);
+    temp2 = pEst(i0);
+    temp3 = ID(i0);
+    temp4 = abundance(i0);
+    J(i0) = J(i1);
+    pEst(i0) = pEst(i1);
+    ID(i0) = ID(i1);
+    abundance(i0) = abundance(i1);
+    J(i1) = temp1;
+    pEst(i1) = temp2;
+    ID(i1) = temp3;
+    abundance(i1) = temp4;
+
+figureNB(12,6);
+axes('Position',[0.1, 0.22, 0.8, 0.62])
+    plot(J,pEst,'.k')
+    set(gca,'yscale','log')
+    ylabel(['Unitary AP power (' char(956) 'V^2)'])
+    xticks(1:55)
+    set(gca,'FontSize',5)
+    xticklabels(cellfun(@(x)strrep(x,'_','\_'),ID,'UniformOutput',false))
+    gcaformat;
+    xax = get(gca,'xaxis');
+    xlim([0,56])
+    set(gca,'XTickLabelRotation',90)
+    xax.FontSize = 5;
+
+axes('Position',[0.1, 0.9, 0.8, 0.07])
+    scatter(1:55,ones(55,1),max(2,abundance),abundance,'filled');
+    xlim([0,56])
+    axis off
+    idcs = find(abundance>6.5);
+    for i = idcs
+        text(i,2,sprintf('%.1f%c',abundance(i),char(37)),'FontSize',6,'HorizontalAlignment','center');
+        % text(i,2,sprintf('%.1f',abundance(i)),'FontSize',6,'HorizontalAlignment','center');
+    end
+    colormap(flip(copper))

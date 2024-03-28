@@ -19,6 +19,7 @@ save('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_un
 
 
 % Bootstrap average
+load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitary_AP_PSD.mat','freq','psd_unit','mtype');
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\mtype_abundance.mat','mtype_abundance');
 [J,ID] = findgroups(mtype);
 
@@ -26,7 +27,7 @@ for i = 1:length(ID)
     abundance(i) = mtype_abundance(ID{i},:).Abundance;
 end
 
-mtype_abundance.count = splitapply(@(x) length(x),pEst,J(:)')';
+mtype_abundance.count = splitapply(@(x) sum(x),ones(size(J)),J)';
 scaledAbundance = mtype_abundance.Abundance./mtype_abundance.count;
 prop = scaledAbundance(J);
 F = cumsum(prop)/sum(prop);
@@ -38,6 +39,25 @@ for i = 1:1e3
     bs_sample = interp1(F(idcs),idcs,R(:,i),'next','extrap');
     bootstrap_Est(:,i) = nanmean(psd_unit(:,bs_sample),2);
 end
+
+
+avgEnergy = sum(bootstrap_Est*mean(diff(freq)));
+
+mean(avgEnergy)
+std(avgEnergy)
+
+figureNB(6,5)
+    plotwitherror(freq,bootstrap_Est,'SE','color','k','LineWidth',1)
+    set(gca,'xscale','log')
+    set(gca,'yscale','log')
+    ylabel(['Unitary AP energy density (' char(956) 'V^2/Hz)'])
+    xlabel('Frequency (Hz)')
+    xlim([1,2e3])
+    xticks([1,10,100,1000])
+    xticklabels([1,10,100,1000])
+    gcaformat;
+
+
 
 
 function [mtype,ei_type,layer,morph] = getMtypes(folder)

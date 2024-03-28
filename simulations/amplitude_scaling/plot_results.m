@@ -21,7 +21,7 @@ SIG0 = sum(ap_unit*mean(diff(model.freq)));
 P0 = interp1(model.freq,ap_unit,data.freq);
 
 % Lower and upper bounds on EEG power
-A1 = 1;
+A1 = 10;
 A2 = 200;
 
 % Plot
