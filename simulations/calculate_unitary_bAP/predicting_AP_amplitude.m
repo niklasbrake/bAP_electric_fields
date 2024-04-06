@@ -11,16 +11,17 @@ V = squeeze(max(vecnorm(savedUnitaryAP,2,2)));
 ai = vecnorm(asym_idx,2,2);
 
 C = mtype_abundance(mtype,:).Abundance;
-figureNB(9,7.5);
-    scatter(vecnorm(asym_idx(~ei_type,:),2,2),pEst(~ei_type),1+2*C(~ei_type),zeros(sum(~ei_type),1),'filled','MarkerFaceAlpha',0.3);
+figureNB(4.4,4.4);
+    scatter(vecnorm(asym_idx(~ei_type,:),2,2),pEst(~ei_type),1+C(~ei_type),zeros(sum(~ei_type),1),'filled','MarkerFaceAlpha',0.3);
     hold on;
-    scatter(vecnorm(asym_idx(ei_type,:),2,2),pEst(ei_type),1+2*C(ei_type),ones(sum(ei_type),1),'filled','MarkerFaceAlpha',0.7);
+    scatter(vecnorm(asym_idx(ei_type,:),2,2),pEst(ei_type),1+C(ei_type),ones(sum(ei_type),1),'filled','MarkerFaceAlpha',0.7);
     colormap([0,0,1;1,0,0]);
     set(gca,'xscale','log')
     set(gca,'yscale','log')
     t = log10(get(gca,'xlim'));
     t = linspace(t(1),t(end),1e3);
-    FT = fitlm((vecnorm(asym_idx(:,:),2,2)),(pEst(:)'),'intercept',false,'RobustOpts',true)
+    FT = fitlm((vecnorm(asym_idx(:,:),2,2)),(pEst(:)'),'intercept',false,'RobustOpts',true);
+    FT.Rsquared.Ordinary
     plot(10.^t,FT.predict(10.^t(:)),'-k')
     xlabel('Dendrite asymmetry index')
     ylabel(['Unitary AP power (' char(956) 'V^2)'])

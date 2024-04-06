@@ -1,11 +1,12 @@
 % function example_EI_ratio_spectra
-% [sa,X] = network_simulation_beluga.getHeadModel;
+[sa,X] = network_simulation_beluga.getHeadModel;
 
 folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\sampled_mtypes';
 F = dir(folder);
 F = F(3:end);
 
 EI_vec = {'01','1.5','2.1','3.1','4.5','6.6','9.7','14.1','20.6','30'};
+EI = cellfun(@(x) str2num(x),EI_vec);
 iCtx = 16e3;
 
 % i = 46;
@@ -16,11 +17,41 @@ i=50;
 folder0 = fullfile(folder,F(i).name,'matlab_recordings');
 clrs = flipud(jet(10));
 
+meanAP = [];
 N = zeros(length(EI_vec),1);
 fs = 16e3;
 psd_active = [];
 psd_passive = [];
 figureNB;
+
+for k = 1:length(EI_vec)
+    load(fullfile(folder0,sprintf('synaptic_input_EI%s_passive.mat',EI_vec{k})))
+    eeg = network_simulation_beluga.getEEG(dipoles,sa,1e3);
+    [f,~,psd] = eegfft(time*1e-3,detrend(eeg),0.5,0.4);
+    psd_passive(:,k) = mean(psd,2);
+
+    load(fullfile(folder0,sprintf('synaptic_input_EI%s.mat',EI_vec{k})))
+    eeg = network_simulation_beluga.getEEG(dipoles,sa,1e3);
+    [f,~,psd] = eegfft(time*1e-3,detrend(eeg),0.5,0.4);
+    psd_active(:,k) = mean(psd,2);
+
+    [y,x] = findpeaks(voltage,'MinPeakHeight',0);
+    N(k) = length(x);
+    if(N(k)<2)
+        continue;
+    end
+    unitaryAP = zeros(1,2001);
+    for j = 1:length(x)
+        idcs = max(min(x(j)-1e3:x(j)+1e3,length(eeg)),1);
+        y = eeg(idcs);
+        y(idcs==1) = 0;
+        y(idcs==length(eeg)) = 0;
+        unitaryAP(j,:) = y;
+    end
+    unitaryAP = unitaryAP-median(unitaryAP,2);
+    meanAP = [meanAP;unitaryAP];
+end
+
 
 
 firingFrequency = N(:)/range(time)*1e3;
@@ -129,45 +160,57 @@ figureNB(5,5);
     ylabel('apEEG scaling factor')
     gcaformat(gca)
 
-%{
-figureNB;
-for k = 1:10
-    Y = psd_active(:,k);
-    B(:,k) = regress(Y,X);
-    B2(k) = mean((Y-X1)./X1);
-    subplot(2,5,k)
-    plot(Y,'color','k')
+
+
+figureNB(16.5,5)
+subplot(1,4,1);
+    plot(1./EI,firingFrequency,'.-k','MarkerSize',10,'LineWidth',1)
     hold on;
-    % plot(X1,'color',[0.6,0.6,0.6])
-    plot(X1+N(k)/2*psd_unit(:,k),'color','b','LineWidth',2)
+    plot(1./EI,0*firingFrequency,'.-','MarkerSize',10,'LineWidth',1,'color',[0.6,0.6,0.6])
+    set(gca,'xscale','log')
+    xticks([1/30,1/10,1/3,1])
+    xticklabels({'1:30','1:10','1:3','1:1'})
+    ylabel('EI ratio (\lambda_E:\lambda_I)')
+    xlabel('EI ratio (\lambda_E:\lambda_I)')
+    ylabel('Firing frequency (Hz)')
+    gcaformat
+    xlim([1/10,1])
+subplot(1,4,2)
+    plot(psd_passive(:,end),'color',[0.6,0.6,0.6],'LineWidth',1)
+    hold on;
+    plot(psd_active(:,end),'color','k','LineWidth',1)
+    plot(B2(end)*X1,'color','b','LineWidth',2)
     set(gca,'xscale','log')
     xlim([1,2e3])
-    ylim([1e-20,1e-14]);
+    ylim([1e-25,1e-14]);
+    yticks([1e-25,1e-20,1e-15])
     set(gca,'yscale','log')
-    title(sprintf('%d Hz',round(N(k)/2)))
+    title(sprintf('%.1f Hz',firingFrequency(k)))
     xticks([1,10,100,1000])
-    xticklabels([1,10,100,1000])
+    % xticklabels([1,10,100,1000])
     xlabel('Frequency (Hz)')
     ylabel(['Power (' char(956) 'V^2/Hz)'])
     gcaformat;
-end
-%}
-
-
-% figureNB;
-%     for i = 1:size(psd_active,2)
-%         plot(f,psd_active(:,i),'color',clrs(i,:))
-%         hold on
-%         set(gca,'xscale','log')
-%         set(gca,'yscale','log')
-%     end
-%     colormap(jet(10))
-%     colorbar;
-%     C = get(gca,'colorbar')
-%     C.Ticks = 1/22:1/10:(1-1/22)
-%     C.Label.String = 'E:I ratio'
-%     C.TickLabels = {'1','1.5','2.1','3.1','4.5','6.6','9.7','14.1','20.6','30'};
-%     xlim([1,1e4])
-%     xlabel('Frequency (Hz)')
-%     ylabel(['Power (' char(956) 'V^2/Hz)'])
-%     gcaformat(gcf)
+subplot(1,4,3)
+    plot(psd_passive(:,1),'color',[0.6,0.6,0.6],'LineWidth',1)
+    hold on;
+    plot(psd_active(:,1),'color','k','LineWidth',1)
+    plot(B2(1)*X1,'color','b','LineWidth',2)
+    set(gca,'xscale','log')
+    xlim([1,2e3])
+    ylim([1e-25,1e-14]);
+    yticks([1e-25,1e-20,1e-15])
+    set(gca,'yscale','log')
+    title(sprintf('%.1f Hz',firingFrequency(k)))
+    xticks([1,10,100,1000])
+    % xticklabels([1,10,100,1000])
+    xlabel('Frequency (Hz)')
+    ylabel(['Power (' char(956) 'V^2/Hz)'])
+    gcaformat;
+subplot(1,4,4);
+    plot(firingFrequency,B2,'xk','MarkerSize',10,'LineWidth',2)
+    line([0,m],[0,m],'color','r','LineWidth',1)
+    xlabel('Firing frequency (Hz)')
+    % ylabel('\beta_1')
+    ylabel('apEEG scaling factor')
+    gcaformat(gca)

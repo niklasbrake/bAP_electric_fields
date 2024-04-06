@@ -1,50 +1,16 @@
 warning('off','signal:findpeaks:largeMinPeakHeight');
-% [sa,X] = network_simulation_beluga.getHeadModel;
 
-% folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\neuron_models';
 folder = '/lustre04/scratch/nbrake/data/simulations/unitary_AP';
 
+disp('Script running...')
+
 % Calculate spike triggered average
-% [mtype,ei_type,layer,morph] = getMtypes(folder);
-% [savedUnitaryAP,N,EI,files] = getUnitaryAP(folder);
-% save('/lustre04/scratch/nbrake/data/simulation_analyzed/unitaryAP/unitaryAP.mat');
-% return;
-%{
-save('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_all.mat','savedUnitaryAP','mtype','ei_type','layer','morph');
-%}
-
-% Compute unitary spectrum
-% load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_all.mat')
-load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
-psd_unit = getUnitarySpectrum(savedUnitaryAP)
-% save('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitary_AP_PSD.mat','freq','psd_unit','mtype');
-
-% Bootstrap average
-
-bs_sample = reshape(sample_blue_neurons(1e6),1e3,1e3);
-for i = 1:1e3
-    waitbar(i/1e3)
-    bootstrap_Est(:,i) = nanmean(psd_unit(:,bs_sample(:,i)),2);
-end
+[mtype,ei_type,layer,morph] = getMtypes(folder);
+[savedUnitaryAP,N,EI,files] = getUnitaryAP(folder);
+save('/lustre04/scratch/nbrake/data/simulation_analyzed/unitaryAP/unitaryAPNew.mat');
 
 
-avgEnergy = sum(bootstrap_Est*mean(diff(freq)));
-
-mean(avgEnergy)
-std(avgEnergy)
-
-figureNB(6,5)
-    plotwitherror(freq,bootstrap_Est,'SE','color','k','LineWidth',1)
-    set(gca,'xscale','log')
-    set(gca,'yscale','log')
-    ylabel(['Unitary AP energy density (' char(956) 'V^2/Hz)'])
-    xlabel('Frequency (Hz)')
-    xlim([1,2e3])
-    xticks([1,10,100,1000])
-    xticklabels([1,10,100,1000])
-    gcaformat;
-
-
+updateEIratio(folder,files,N,EI);
 
 
 function [mtype,ei_type,layer,morph] = getMtypes(folder)
@@ -75,14 +41,25 @@ function [savedUnitaryAP,N,EI,files] = getUnitaryAP(folder)
 
     fs = 16e3; % Hz
 
-    h = waitbar(0);
     files = cell(M,1);
-    tic
     for i = 1:M
-        update_waitbar(h,i,M);
         files{i} = F(i).name;
         folder0 = fullfile(folder,F(i).name,'matlab_recordings');
 
+        % Repair EI files
+        % F2 = dir(folder0);
+        % F2 = F2(3:end);
+        % for j = 1:length(F2)
+        %     if(etime(datevec(F2(j).date),datevec('2024-03-27'))>0)
+        %         [~,a1,a2] = fileparts(F2(j).name);
+        %         temp = strsplit(a1,'EI');
+        %         ei = str2num(temp{2});
+        %         csvwrite(fullfile(folder,files{i},'EI_ratio.csv'),ei);
+        %         break;
+        %     end
+        % end
+
+        % Load EI ratio
         fid = fopen(fullfile(folder,F(i).name,'EI_ratio.csv'));
         ei = textscan(fid,'%s');
         fclose(fid);
@@ -94,7 +71,7 @@ function [savedUnitaryAP,N,EI,files] = getUnitaryAP(folder)
         try
             load(fullfile(folder0,sprintf('synaptic_input_EI%s.mat',ei)));
         catch
-            disp(F(i).name)
+            disp(F(i).name);
             continue;
         end
         [y,x] = findpeaks(voltage,'MinPeakHeight',0);
@@ -117,21 +94,15 @@ end
 % Change EI ratio to get spiking frequency between 0 and 100 Hz
 function updateEIratio(folder,files,N,EI)
 
-    idcs = find(N < 5 | N>100)
+    idcs = find(N < 20);
     for i = 1:length(idcs)
         j = idcs(i);
-        if(N(j) <= 5)
-            newEI = EI(j)/2;
-        else
-            newEI = EI(j)*2;
-        end
-
+        newEI = EI(j)/2;
         fprintf('%s, %.2f, EI: %f -> %f\n',files{j},N(j),EI(j),newEI)
-
         csvwrite(fullfile(folder,files{j},'EI_ratio.csv'),newEI);
     end
 
-    fid = fopen('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\changedEI.txt','w');
+    fid = fopen('/lustre04/scratch/nbrake/code/simulate_blue_brain/changedEI.txt','w');
     fprintf(fid,'%s\n',files{idcs});
     fclose(fid)
 end
@@ -144,7 +115,7 @@ function psd_unit = getUnitarySpectrum(savedUnitaryAP)
     m = size(savedUnitaryAP,3);
     N = length(idcs);
     n = size(savedUnitaryAP,1);
-    psd_unit = zeros(1e3,m);
+    psd_unit = zeros(n,m);
     freq = fs/n:fs/n:fs/2;
     h = waitbar(0);
     for i = 1:N
@@ -154,6 +125,7 @@ function psd_unit = getUnitarySpectrum(savedUnitaryAP)
         xdft = xdft(2:n/2+1,:);
         psdx = (1/(fs*n)) * abs(xdft).^2;
         psdx(1:end-1,:) = 2*psdx(1:end-1,:);
+
         psd_unit = psd_unit+psdx/N;
     end
 end

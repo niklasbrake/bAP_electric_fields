@@ -1,8 +1,7 @@
+load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
 
-load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_all.mat');
-
-N = m*(m-1)/2;
 m = size(savedUnitaryAP,3);
+N = m*(m-1)/2;
 Sij = zeros(3,3,100,N);
 Sii = zeros(3,3,100,m);
 
@@ -16,7 +15,7 @@ count = 1;
 for i=1:m
     for x = 1:3
         for y = 1:3
-            R_eeg = xcorr(savedUnitaryAP(:,x,i),savedUnitaryAP(:,y,i));
+            R_eeg = xcorr(savedUnitaryAP(:,x,i),savedUnitaryAP(:,y,i),'unbiased');
             R_eeg = detrend(R_eeg(2:end),'constant');
             S12 = fft(R_eeg)/fs;
             S12 = 2*S12(2:2001).*exp(2*pi*sqrt(-1)*f0(:)*1999/fs);
@@ -27,7 +26,7 @@ for i=1:m
     for j = i+1:m
         for x = 1:3
             for y = 1:3
-                R_eeg = xcorr(savedUnitaryAP(:,x,i),savedUnitaryAP(:,y,j));
+                R_eeg = xcorr(savedUnitaryAP(:,x,i),savedUnitaryAP(:,y,j),'unbiased');
                 R_eeg = detrend(R_eeg(2:end),'constant');
                 S12 = fft(R_eeg)/fs;
                 S12 = 2*S12(2:2001).*exp(2*pi*sqrt(-1)*f0(:)*1999/fs);
@@ -38,3 +37,4 @@ for i=1:m
     end
     update_waitbar(h,count,N);
 end
+save('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\spike_synchrony\cross_spectra_highSNR.mat','Sii','Sij','-v7.3');

@@ -9,7 +9,7 @@ T = tmax/dt+1;
 t = 0:dt:tmax;
 N = 100;
 
-m1 = 20;%floor(tmax*100);
+m1 = 100;%floor(tmax*100);
 
 X1 = zeros(T,N);
 X2 = zeros(T,N);
@@ -32,7 +32,9 @@ f0 = fs/L:fs/L:fs/2;
 sxy = zeros(length(f0),N*(N-1)/2);
 sxx = zeros(length(f0),N);
 count = 1;
+%{
 for i=1:N
+
     R_eeg = xcorr(y(:,i),y(:,i));
     R_eeg = R_eeg(2:end);
     S11 = fft(R_eeg)/fs;
@@ -56,6 +58,7 @@ end
 sxy = A*round(A*m1)*sxy;
 sxx = round(A*m1)*sxx;
 %%%%
+%}
 
 for i = 1:N
     % m2 = poissrnd(A*m1);
@@ -87,7 +90,7 @@ sxy0 = interp1(f0,sum(sxy,2),f)/size(Y1,1);
 sxx0 = interp1(f0,sum(sxx,2),f)/size(Y1,1);
 
 % B = N*(N-1)*mean(cos(2*pi*f(:)*S.*randn(1,N)),2);
-B = exp(-(2*pi*f*S*sqrt(2)).^2/2);
+B = exp(-pi^2*f.^2*2*(S*sqrt(2)).^2);
 
 fig = figureNB(13.5,5.5);
 subplot(1,2,1);
@@ -133,5 +136,13 @@ subplot(1,2,2);
     set(gca,'FontSize',10);
     set(gca,'FontName','LM Roman 10')
 
-set(fig,'PaperPosition',[0,0,fig.Position(3:4)],'PaperUnits','centimeters','PaperSize',fig.Position(3:4),'Renderer','Painters');
-print('E:/Research_Projects/005_Aperiodic_EEG/unitary_APs/manuscript/figures/workspace/figure4/theory_cross_spectrum.png','-dpng','-r600');
+% set(fig,'PaperPosition',[0,0,fig.Position(3:4)],'PaperUnits','centimeters','PaperSize',fig.Position(3:4),'Renderer','Painters');
+% print('E:/Research_Projects/005_Aperiodic_EEG/unitary_APs/manuscript/figures/workspace/figure4/theory_cross_spectrum.png','-dpng','-r600');
+
+
+figureNB;
+plot(f,sum(psdi,2))
+hold on;
+plot(f,psd2)
+set(gca,'xscale','log')
+set(gca,'yscale','log')

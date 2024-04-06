@@ -7,7 +7,7 @@ n1 = length(X)/2; n2 = n1+length(Y)/2;
 F = [X(1:2:end),Y(1:2:end)];
 freq1 = 2*maxnormalize(F(1:n1));
 freq2 = (log10(3e3)-2)*maxnormalize(F(n1+1:n2))+2;
-f0 = 10.^[freq1,freq2];
+freq = 10.^[freq1,freq2];
 
 S = -[X(2:2:end),Y(2:2:end)];
 S = maxnormalize(S);
@@ -15,9 +15,10 @@ r = regress([log10(2e3);log10(8)],[1,1;0.0476,1])
 S = 10.^(r(1)*S+r(2));
 
 
+
 figureNB(10,5.8);
 axes('Units','centimeters','Position',[1.38,0.94,8.21,4.52]);
-    plot(f0,S,'k');
+    plot(freq,S,'k');
     hold on;
 
     %N Noise threshold (doi.org/10.1088/0967-3334/27/2/002)
@@ -42,19 +43,3 @@ axes('Units','centimeters','Position',[1.38,0.94,8.21,4.52]);
     set(gca,'MinorGridLineWidth',0.2)
     set(gca,'LineWidth',0.2)
     set(gca,'TickDir','in')
-
-S = (S*1e-3).^2;
-figureNB(10,5.8);
-axes('Units','centimeters','Position',[1.38,0.94,8.21,4.52]);
-    plot(f0,S,'k');
-    hold on;
-
-    %N Noise threshold (doi.org/10.1088/0967-3334/27/2/002)
-    low_noise = (8*1e-3).^2;
-    plot([1,3e3],low_noise*[1,1],'k','LineWidth',1,'LineStyle','--')
-    set(gca,'xscale','log')
-    set(gca,'yscale','log');
-    xlabel('Frequency (Hz)');
-    ylabel(['PSD (' char(956) 'V^2/Hz)'])
-    xlim([1,300])
-    gcaformat;

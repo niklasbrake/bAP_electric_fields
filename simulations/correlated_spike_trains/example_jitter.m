@@ -1,4 +1,4 @@
-% [sa,X] = network_simulation_beluga.getHeadModel;
+[sa,X] = network_simulation_beluga.getHeadModel;
 dt = 1/16e3;
 tmax = 1;
 N = tmax/dt+1;
@@ -86,7 +86,7 @@ Z = (Z-M1)./(M2-M1);
 axes('Position',[0.05,0.03,0.6,0.4]);
     hold on;
     plot(t-1/16,0.9*Z(:,1),'color','k');
-    plot(t-1/16,1+0.9*Z(:,2),'color','r')
+    plot(t-1/16,1+0.9*Z(:,2),'color','k')
     F = fill(t0+[-30,30,30,-30,-30]*1e-3,[-0.2,-0.2,2.1,2.1,-0.2],[0.6,0.6,0.6],'FaceAlpha',0.2,'EdgeColor','k','LineStyle',':','LineWidth',1);
     F.FaceColor = 'none';
     axis off;
@@ -99,7 +99,7 @@ axes('Position',[0.7,0.03,0.25,0.4]);
     F.FaceColor = 'none';
     hold on;
     plot(t-1/16,0.9*Z(:,1),'LineWidth',1,'color','k');
-    plot(t-1/16,1+0.9*Z(:,2),'LineWidth',1,'color','r')
+    plot(t-1/16,1+0.9*Z(:,2),'LineWidth',1,'color','k')
 
     % for i = 1:length(common)
     %     line([1,1]*s1(I1(i)),[60,45],'color','r','LineWidth',1)

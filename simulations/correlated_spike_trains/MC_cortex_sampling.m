@@ -20,13 +20,15 @@ Mdl = KDTreeSearcher(X.vertices);
 
 
 % Result variables
-Sxy = zeros(100,1); Pxy = zeros(100,1);
-Sxx = zeros(100,1); Pxx = zeros(100,1);
+% f = 10.^linspace(0,log10(3e3),100);
+f = fs/L:fs/L:fs/2;
+Sxy = zeros(length(f),1); Pxy = zeros(length(f),1);
+Sxx = zeros(length(f),1); Pxx = zeros(length(f),1);
 % dValues = [0,10.^linspace(-3,2,1e3)];
 dValues = linspace(0,100,1e3);
-Pxy_D = zeros(100,length(dValues));
-SSExy_D = zeros(100,length(dValues));
-SSE_xx = zeros(100,1);
+Pxy_D = zeros(length(f),length(dValues));
+SSExy_D = zeros(length(f),length(dValues));
+SSE_xx = zeros(length(f),1);
 count_D = zeros(length(dValues),1);
 
 % Convergence variable
@@ -44,7 +46,6 @@ N = 0;
 
 
 figureNB;
-f = 10.^linspace(0,log10(3e3),100);
 x = [f,flip(f)];
 subplot(1,2,1);
     SE = nan+sqrt(Sxx/(N-1))/sqrt(N);
@@ -60,13 +61,14 @@ subplot(1,2,2);
     plt1 = fill(x,y,'k','FaceAlpha',0.2);
     set(gca,'xscale','log');
     ttl1 = title('');
+
 while true
     N = N+1;
 
     % Randomly sample unitary AP profiles
     i = min(neuronIdcs(iSampling,:));
     j = max(neuronIdcs(iSampling,:));
-    Rij = Sij(:,:,:,mapIJ(i,j));
+    % Rij = Sij(:,:,:,mapIJ(i,j));
 
     % Randomly sample vertex from cortex
     iX = randi(M);
@@ -74,38 +76,42 @@ while true
     % Sample second vertex with higher probability for nearby neurons
     d = exprnd(8);
     idcs = rangesearch(Mdl,X.vertices(iX,:),d);
-    jX = randsample(idcs{1},1);
+    if(length(idcs{1})>1)
+        jX = randsample(idcs{1},1);
+    else
+        jX = idcs{1};
+    end
 
 
     uiAi = Lxyz(iX,:);
     ujAj = Lxyz(jX,:);
 
-    for iF = 1:100
-        Sxy(iF) = uiAi*Rij(:,:,iF)*ujAj';
+    for iF = 1:size(Sii,3)
+        % Sxy(iF) = uiAi*Rij(:,:,iF)*ujAj';
         Sxx(iF) = 0.5*(uiAi*Sii(:,:,iF,i)*uiAi'+ujAj*Sii(:,:,iF,j)*ujAj');
     end
     % Scale by distance (spike time correlation)
-    Sxy = exp(-d.^2./6)*Sxy;
+    % Sxy = exp(-d.^2./6)*Sxy;
 
     % Update mean
-    et = Sxy-Pxy;
-    Pxy = Pxy + et/N;
+    % et = Sxy-Pxy;
+    % Pxy = Pxy + et/N;
     etxx = (Sxx-Pxx);
     Pxx = Pxx + etxx/N;
     SSE_xx = SSE_xx + etxx.*(Sxx-Pxx);
 
     % Update d dependence
-    iD = interp1(dValues,1:length(dValues),d,'nearest','extrap');
-    Pxy_D(:,iD) = Pxy_D(:,iD) + Sxy;
-    SSExy_D(:,iD) = SSExy_D(:,iD) + et.*(Sxy-Pxy);
-    count_D(iD) = count_D(iD)+1;
+    % iD = interp1(dValues,1:length(dValues),d,'nearest','extrap');
+    % Pxy_D(:,iD) = Pxy_D(:,iD) + Sxy;
+    % SSExy_D(:,iD) = SSExy_D(:,iD) + et.*(Sxy-Pxy);
+    % count_D(iD) = count_D(iD)+1;
 
     % Convergence check
     if(iConverge==maxLag)
-        SE = sqrt(sum(SSExy_D,2)/(N-1))/sqrt(N);
-        mu = sum(Pxy_D,2)/N;
-        plt1.YData = [mu-1.96*SE;flip(mu)+1.96*flip(SE)];
-        ttl1.String = sprintf('%d (%f%c)',N,100*N/1e15,char(37));
+        % SE = sqrt(sum(SSExy_D,2)/(N-1))/sqrt(N);
+        % mu = sum(Pxy_D,2)/N;
+        % plt1.YData = [mu-1.96*SE;flip(mu)+1.96*flip(SE)];
+        % ttl1.String = sprintf('%d (%f%c)',N,100*N/1e15,char(37));
 
         SE = sqrt(SSE_xx/(N-1))/sqrt(N);
         mu = Pxx;
