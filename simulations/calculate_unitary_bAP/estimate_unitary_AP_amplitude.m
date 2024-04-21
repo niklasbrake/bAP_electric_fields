@@ -201,9 +201,9 @@ axes('Position',[0.1, 0.22, 0.8, 0.62])
     plot(J,pEst,'.k')
     set(gca,'yscale','log')
     ylabel(['Unitary AP power (' char(956) 'V^2)'])
-    xticks(1:55)
+    % xticks(1:55)
     set(gca,'FontSize',5)
-    xticklabels(cellfun(@(x)strrep(x,'_','\_'),ID,'UniformOutput',false))
+    % xticklabels(cellfun(@(x)strrep(x,'_','\_'),ID,'UniformOutput',false))
     gcaformat;
     xax = get(gca,'xaxis');
     xlim([0,56])
@@ -220,3 +220,57 @@ axes('Position',[0.1, 0.9, 0.8, 0.07])
         % text(i,2,sprintf('%.1f',abundance(i)),'FontSize',6,'HorizontalAlignment','center');
     end
     colormap(flip(copper))
+
+
+
+
+figureNB(10.4,5);
+axes('Position',[0.14, 0.18, 0.8, 0.61])
+    i = find(~ei_type);
+    S = scatter(J(i),pEst(i),8,[0.5,0.5,0.8],'filled','MarkerEdgeColor','k');
+    hold on;
+    i = find(ei_type);
+    S = scatter(J(i),pEst(i),10,[0.8,0.5,0.5],'filled','MarkerEdgeColor','k');
+    set(gca,'yscale','log')
+    ylabel(['Unitary AP power (' char(956) 'V^2)'])
+    gcaformat;
+    xax = get(gca,'xaxis');
+    xax.MinorTickValues = 1:55;
+    xax.MinorTick = 'on';
+    xlim([0,56])
+    xlabel('Neuron morphology type index')
+    set(gca,'FontSize',8)
+
+axes('Position',[0.14, 0.92, 0.8, 0.05])
+    [~,I] = sort(abundance,'descend');
+    for i = I
+        scatter(i,1,2*max(2,abundance(i)),abundance(i),'filled');
+        hold on;
+    end
+    xlim([0,56])
+    axis off
+    colormap(flip(copper))
+
+axes('Position',[0.145 0.83 0.28 0.06])
+    exA = [2,5,10,15];
+    scatter([0,0.36,0.65,1],zeros(1,4),2*exA,exA,'filled');
+    text(0.05,0,'<2%','FontSize',8,'VerticalAlignment','middle')
+    text(0.41,0,'5%','FontSize',8,'VerticalAlignment','middle')
+    text(0.7,0,'10%','FontSize',8,'VerticalAlignment','middle')
+    text(1.06,0,'15%','FontSize',8,'VerticalAlignment','middle')
+    ylim([0,1]);
+    xlim([-0.1,1]);
+    T = text(-0.1,1,'Abundance','FontSize',8,'HorizontalAlignment','left');
+    axis off;
+
+
+axes('Position',[0.88 0.83 0.02 0.06])
+
+    S = scatter(0,1,12,[0.8,0.5,0.5],'filled','MarkerEdgeColor','k');
+    text(1,1,'Ex.','FontSize',8,'VerticalAlignment','middle')
+
+    hold on;
+    S = scatter(0,0,12,[0.5,0.5,0.8],'filled','MarkerEdgeColor','k');
+    text(1,0,'In.','FontSize',8,'VerticalAlignment','middle')
+    axis off;
+    ylim([0,1]);

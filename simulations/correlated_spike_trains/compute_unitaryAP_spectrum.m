@@ -1,4 +1,6 @@
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
+
+savedUnitaryAP = savedUnitaryAP-nanmedian(savedUnitaryAP(1:1500,:,:));
 savedUnitaryAP = gpuArray(savedUnitaryAP(2:end,:,:));
 
 % Calculate new coordinates uiAi
@@ -22,19 +24,12 @@ psd_unit = zeros(1e3,m);
 n = size(savedUnitaryAP,1);
 freq = fs/n:fs/n:fs/2;
 
-psd = gpuArray(zeros(1e3,m));
+psd = gpuArray(zeros(n/2,m));
 h = waitbar(0);
 for j = 1:m
     update_waitbar(h,j,m);
-    eeg1 = savedUnitaryAP(:,:,j)'*Lxyz';
+    eeg1 = savedUnitaryAP(:,:,j)*Lxyz;
     xdft = fft(eeg1);
     xdft = xdft(2:n/2+1,:);
     psd(:,j) = 2*mean(abs(xdft/fs).^2,2);
-end
-
-
-I = reshape(sample_blue_neurons(1e6),1e3,1e3);
-p_avg = psd(:,1)*0;
-for i = 1:1e3
-    p_avg = p_avg + mean(psd(:,I(:,i)),2)/1e3;
 end
