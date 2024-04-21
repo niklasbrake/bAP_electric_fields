@@ -15,10 +15,17 @@ for i = 1:size(X.faces,1)
     norm_vec(i,:) = mean(sa.cortex75K.normals(X.faces(i,:),:)); % Normal to face
 end
 X.face_norm = norm_vec./vecnorm(norm_vec,2,2);
-X.face_area = A0;
+X.captured_face_area = 0*A0;
+X.total_face_area = A0;
 
 %%%% Get total mesh area within a radius R of mesh point i
 % Sample N starting positions
+
+idx = find(cellfun(@(x)~isempty(x),strfind(sa.clab_electrodes,'POz')));
+x0 = sa.locs_3D_orig(idx,:);
+d = vecnorm(X.vertices-x0,2,2);
+idcs = find(d<50);
+
 N = 10e3;
 idcs = randperm(size(X.faces,1),N);
 % Compute area within 20 radii on log scale, ranging from 0.01 mm to 20 mm. Beyong 20 mm, correlation function
@@ -51,23 +58,25 @@ function A = areaCDF(X,idcs0,rValues)
     V = X.vertices - c0; % center the entire mesh grid on starting face
     alpha = sum(X.face_norm.*norm0,2);
 
-    included = zeros(size(X.face_area));
+    included = zeros(1,size(X.total_face_area,1));
     A = zeros(length(rValues),2);
     for j = 1:length(rValues)
         R = rValues(j);
         idcs = setdiff(1:size(X.faces,1),find(included));
         if(j>1)
-            A(j,:) = A(j-1,:);
+            % Include area of faces entirely enclosed in radius
+            A(j,:) = sum(X.total_face_area(find(included)));
         end
         for i = idcs
             tri = V(X.faces(i,:),:);
             if(sum(vecnorm(tri,2,2)<(R+2)))
                 A_temp = calculate_intersection_area(tri,R);
-                if(A_temp./X.face_area(i)==1)
-                    included(i)=1;
-                end
                 A(j,1) = A(j,1)+A_temp*alpha(i);
                 A(j,2) = A(j,2)+A_temp;
+                % If entire face has been computed, ignore for future balls
+                if(abs(A_temp - X.total_face_area(i))<1e-3)
+                    included(i)=1;
+                end
             end
         end
     end
