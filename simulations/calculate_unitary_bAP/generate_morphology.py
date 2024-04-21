@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/lustre04/scratch/nbrake/code/simulation_code')
+# sys.path.append('/lustre04/scratch/nbrake/code/simulation_code')
 import os
 import neuron
 # sys.path.append('/home/nbrake/pkgs/LFPy-2.2.4')
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     cellID = sys.argv[1]
 
 
-    path0 = os.path.join('/lustre04/scratch/nbrake/data/simulations/unitary_AP',cellID)
+    path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\total_dipole',cellID)
     os.chdir(path0)
     os.makedirs(os.path.join(path0,'matlab_recordings'), exist_ok=True)
 

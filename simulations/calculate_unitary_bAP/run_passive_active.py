@@ -23,7 +23,7 @@ def read_templatename(templatefile):
     return templatename
 
 def main(cellID,EI=5):
-    path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\sampled_mtypes',cellID)
+    path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\neuron_models',cellID)
     os.chdir(path0)
     os.makedirs(os.path.join(path0,'matlab_recordings'), exist_ok=True)
 
@@ -37,7 +37,6 @@ def main(cellID,EI=5):
         'templatename' :  templatename,
         'templateargs' :  0,
         'Ra': 100,
-        'passive' : False,
         'celsius': 34,
         'v_init': -65
     }
@@ -62,7 +61,7 @@ def main(cellID,EI=5):
 
     neuron.h.load_file("biophysics.hoc")
     cell = LFPy.TemplateCell(**cellParameters)
-    cell.tstop = 10000
+    cell.tstop = 2000
 
     L = 0
     for sec in neuron.h.SectionList[0]:
@@ -113,7 +112,7 @@ def main(cellID,EI=5):
 
     neuron.h.load_file("biophysics.hoc")
     cell = LFPy.TemplateCell(**cellParameters)
-    cell.tstop = 10000
+    cell.tstop = 2000
     ###############################
 
     # Add excitatory synapses
@@ -160,7 +159,10 @@ def main(cellID,EI=5):
 
 if __name__ == '__main__':
     if(len(sys.argv)==2):
-        EI=5
+        path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\neuron_models',sys.argv[1])
+        file = os.path.join(path0,'EI_ratio.csv')
+        with open(file,"r") as f:
+            EI = eval(f.readline())
     elif(len(sys.argv)==3):
         EI_vec = [1,1.5,2.1,3.1,4.5,6.6,9.7,14.1,20.6,30]
         idx = int(sys.argv[2])-1

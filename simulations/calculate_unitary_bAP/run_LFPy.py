@@ -22,7 +22,7 @@ def read_templatename(templatefile):
     return templatename
 
 def main(cellID,EI=5,passive=False):
-    path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\neuron_models',cellID)
+    path0 = os.path.join(r'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\total_dipole',cellID)
     os.chdir(path0)
     mech_folder = os.path.join(path0,'mechanisms')
     # os.system("nrnivmodl " + mech_folder)
@@ -117,7 +117,7 @@ def main(cellID,EI=5,passive=False):
 
     cdm = LFPy.CurrentDipoleMoment(cell=cell)
 
-    cell.simulate(rec_somav=True,probes=[cdm])
+    cell.simulate(rec_somav=True,probes=[cdm],rec_vmem=True)
 
     t = cell.tvec.reshape([-1,1])
     v = cell.somav.reshape([-1,1])
@@ -129,10 +129,17 @@ def main(cellID,EI=5,passive=False):
     from scipy.io import savemat
     savemat(saveFile, {'time':t,'voltage':v,'dipoles':cdm.data.T})
 
+
+    multi_dipoles, dipole_locs = cell.get_multi_current_dipole_moments()
+    from scipy.io import savemat
+    fm = saveFile + '_multi_dipoles.mat'
+    savemat(fm, {'dipoles':multi_dipoles,'x':dipole_locs,'time':t})
+
+
 if __name__ == '__main__':
     if(len(sys.argv)==2):
-        EI=5
-        passive=False
+        EI=1
+        passive=True
     elif(len(sys.argv)==3):
         EI_vec = [1,1.5,2.1,3.1,4.5,6.6,9.7,14.1,20.6,30]
         idx = int(sys.argv[2])-1
