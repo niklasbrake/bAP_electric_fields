@@ -157,7 +157,7 @@ X2.faces = F;
 X3.vertices = V0;
 X3.faces = F0;
 
-sigma = 10;
+sigma = 6;
 ax(3) = axes('Position',[0.11,0.515,0.4,0.5]);
     d = vecnorm(X.vertices-c0,2,2);
     C = exp(-d.^2/sigma); C = C/max(C);

@@ -1,66 +1,39 @@
 warning('off','signal:findpeaks:largeMinPeakHeight');
 
-load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
-allUnitaryAP = savedUnitaryAP;
-folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\neuron_models';
-F = dir(folder);
-F = F(3:end);
-cellIDs = {F(:).name};
-getUAP = @(id) allUnitaryAP(2:end,3,find(strcmp(id,cellIDs)));
+matObj = matfile('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitary_AP_EI_ratio\EI_ratio.mat');
+cellIDs = who(matObj);
 
-folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\sampled_mtypes';
-F = dir(folder);
-F = F(3:end);
+load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
+files = cellfun(@(x)strrep(x,'-','_'),files,'UniformOutput',false);
+allUnitaryAP = savedUnitaryAP;
+getUAP = @(id) allUnitaryAP(2:end,3,find(strcmp(id,files)));
 
 
 EI_vec = {'01','1.5','2.1','3.1','4.5','6.6','9.7','14.1','20.6','30'};
-iVec = 1:length(F);
-clrs = flipud(jet(10));
 
-% M = length(F);
-M = length(iVec);
-h = waitbar(0);
-% psd_active = zeros(4096,length(EI_vec));
-% psd_passive = zeros(4096,length(EI_vec));
+M = length(cellIDs);
 N = zeros(length(EI_vec),1);
 B2 = zeros(length(EI_vec),M);
 apCount = zeros(length(EI_vec),M);
+
 
 fs = 16e3; % Hz
 h = waitbar(0);
 for ii = 1:M
     update_waitbar(h,ii,M);
-    i = iVec(ii);
-    folder0 = fullfile(folder,F(i).name,'matlab_recordings');
+    meanAP = getUAP(cellIDs{ii});
+    cell = matObj.(cellIDs{ii});
 
     for k = 1:length(EI_vec)
-        load(fullfile(folder0,sprintf('synaptic_input_EI%s_passive.mat',EI_vec{k})))
-        [f0,~,psd] = eegfft(time*1e-3,detrend(dipoles(:,3)),0.5,0.4);
+        [f0,~,psd] = eegfft(cell.passive.time*1e-3,detrend(cell.passive.dipoles(:,3,k)),0.5,0.4);
         psd_passive(:,k,ii) = mean(psd,2);
 
-        load(fullfile(folder0,sprintf('synaptic_input_EI%s.mat',EI_vec{k})))
-        [f0,~,psd] = eegfft(time*1e-3,detrend(dipoles(:,3)),0.5,0.4);
+        [f0,~,psd] = eegfft(cell.active.time*1e-3,detrend(cell.active.dipoles(:,3,k)),0.5,0.4);
         psd_active(:,k,ii) = mean(psd,2);
 
-        [y,x] = findpeaks(voltage,'MinPeakHeight',0);
+        [y,x] = findpeaks(cell.active.voltage(:,k),'MinPeakHeight',0);
         N(k) = length(x);
-        % unitaryAP = zeros(1,2001);
-        % for j = 1:length(x)
-        %     idcs = max(min(x(j)-1e3:x(j)+1e3,length(dipoles)),1);
-        %     y = dipoles(idcs,3);
-        %     y(idcs==1) = 0;
-        %     y(idcs==length(dipoles)) = 0;
-        %     unitaryAP(j,:) = y;
-        % end
-        % unitaryAP = unitaryAP-median(unitaryAP,2);
-        % meanAP = [meanAP;unitaryAP];
     end
-
-    meanAP = getUAP(F(i).name);
-
-    % meanAP = meanAP';
-    % meanAP(isnan(meanAP(:))) = 0;
-    % meanAP = mean(meanAP,2);
 
     n = length(meanAP);
     xdft = fft(meanAP);
@@ -71,10 +44,6 @@ for ii = 1:M
 
     psd_unit = interp1(freq,psdx,f0,'linear','extrap');
     psd_unit = psd_unit*length(meanAP)/fs/1; % per second
-    % psd_unit = psdx*length(meanAP)/fs/1; % per second
-
-    % psd_passive = interp1(f0,psd_passive,freq,'linear','extrap');
-    % psd_active = interp1(f0,psd_active,freq,'linear','extrap');
 
     for k = 1:10
         X0 = psd_passive(:,k,ii);
@@ -92,11 +61,10 @@ for ii = 1:M
         Yhat = log(Yhat);
         R(k,ii) = 1 - sum((Y-Yhat).^2)./sum((Y-mean(Y)).^2);
     end
-
 end
 delete(h)
 
-firingFrequency = apCount(:)/range(time)*1e3;
+firingFrequency = apCount(:)/range(cell.active.time)*1e3;
 
 FT = polyfit(firingFrequency(:),R(:),1);
 t = linspace(0.1,100,20);
@@ -107,75 +75,40 @@ edges = [0,1,2,4,10,20,40,80,Inf]
 bins = discretize(firingFrequency,edges);
 str_edges = {'0-1','1-2','2-4','4-10','10-20','20-40','40-80','>80'};
 
-clrs = clrsPT.sequential(length(edges)+2);
-clrs = clrs(3:end,:);
-
-figureNB;
-subplot(1,3,1);
-    plot(firingFrequency,B2(:),'.k')
-    line([0.1,100],[0.1,100],'color','r','LineWidth',1)
-    xlabel('Firing frequency (Hz)')
-    ylabel('\beta_1')
-    set(gca,'xscale','log')
-    set(gca,'yscale','log')
-    xlim([1,100])
-    xticks([0.1,1,10,100])
-    gcaformat;
-subplot(1,3,2);
-    plot(firingFrequency,R(:),'.k')
-    hold on;
-    plot(t,polyval(FT,t),'color','r','LineWidth',2);
-    ylim([0,1])
-    xlabel('Firing frequency (Hz)')
-    ylabel('R^2')
-    set(gca,'xscale','log')
-    xlim([1,100])
-    xticks([0.1,1,10,100])
-    gcaformat;
-subplot(1,3,3);
-    plot(splitapply(@(x)mean(x,2),psd_Y,bins'));
-    set(gca,'ColorOrder',clrs)
-    xlim([1,3e3]);
-    set(gca,'xscale','log')
-    set(gca,'yscale','log')
-    xlabel('Frequency (Hz)');
-    ylabel('PSD');
-    gcaformat;
-    colormap(clrs)
-    C = colorbar;
-    C.Ticks = (1/16):1/8:(1-1/16);
-
-
 split_Y = splitapply(@(x)mean(x,2),psd_Y,bins');
 split_Yhat = splitapply(@(x)mean(x,2),psd_Yhat,bins');
 
 
 blue = [17,82,185]/255;
 red = clrsPT.qualitative_CM.red;
-figureNB(9,8);
-subplot(2,2,1);
+figureNB(9,4.4);
+subplot(1,2,1);
     plot(firingFrequency,B2(:),'.k')
     line([0.1,100],[0.1,100],'color',red,'LineWidth',1)
-    xlabel('Firing frequency (Hz)')
-    ylabel('\beta_1')
+    xlabel('Firing rate (Hz)')
+    ylabel('Scaling factor (\beta)')
     set(gca,'xscale','log')
     set(gca,'yscale','log')
     xlim([1,100])
     xticks([0.1,1,10,100])
+    xticklabels([0.1,1,10,100])
     gcaformat;
-subplot(2,2,2);
+subplot(1,2,2);
     plot(firingFrequency,R(:),'.k')
     hold on;
     plot(t,polyval(FT,t),'color',red,'LineWidth',2);
     ylim([0,1])
-    xlabel('Firing frequency (Hz)')
+    xlabel('Firing rate (Hz)')
     ylabel('R^2')
     set(gca,'xscale','log')
     xlim([1,100])
     xticks([0.1,1,10,100])
-    gcaformat;
+    xticklabels([0.1,1,10,100])
+gcaformat(gcf,true,8);
+
+figureNB(9,4);
 for i = 1:8
-    subplot(4,4,8+i)
+    subplot(2,4,i)
     plot(f0,split_Y(:,i),'color','k','LineWidth',2);
     hold on;
     plot(f0,split_Yhat(:,i),'color',blue,'LineWidth',1);
@@ -194,5 +127,5 @@ for i = 1:8
         yticklabels({});
     end
     title([str_edges{i} ' Hz']);
-    gcaformat;
 end
+gcaformat(gcf,true,8);

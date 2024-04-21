@@ -1,4 +1,4 @@
-load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_all.mat')
+load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\mtype_abundance.mat','mtype_abundance');
 
 calculate_dendrite_asymmetry
@@ -11,7 +11,7 @@ V = squeeze(max(vecnorm(savedUnitaryAP,2,2)));
 ai = vecnorm(asym_idx,2,2);
 
 C = mtype_abundance(mtype,:).Abundance;
-figureNB(4.4,4.4);
+figureNB(4.2,4);
     scatter(vecnorm(asym_idx(~ei_type,:),2,2),pEst(~ei_type),1+C(~ei_type),zeros(sum(~ei_type),1),'filled','MarkerFaceAlpha',0.3);
     hold on;
     scatter(vecnorm(asym_idx(ei_type,:),2,2),pEst(ei_type),1+C(ei_type),ones(sum(ei_type),1),'filled','MarkerFaceAlpha',0.7);
@@ -26,7 +26,7 @@ figureNB(4.4,4.4);
     xlabel('Dendrite asymmetry index')
     ylabel(['Unitary AP power (' char(956) 'V^2)'])
     ylim([3e-16,1e-12])
-    gcaformat
+    gcaformat(gca,true,8);
 
 t = linspace(1,7e5,1e3)';
 figureNB;
