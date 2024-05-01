@@ -1,6 +1,4 @@
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAPNew.mat')
-
-savedUnitaryAP = savedUnitaryAP-nanmedian(savedUnitaryAP(1:1500,:,:));
 savedUnitaryAP = gpuArray(savedUnitaryAP(2:end,:,:));
 
 % Calculate new coordinates uiAi
@@ -15,7 +13,7 @@ for idx = 1:M
     Lxyz(idx,:) = 1e-6*L0*A;
 end
 Lxyz = Lxyz';
-Lxyz = gpuArray(Lxyz(:,sa.cortex10K.in_from_cortex75K));
+Lxyz = gpuArray(Lxyz(:,sa.cortex2K.in_from_cortex75K));
 
 % Compute unitary spectrum
 fs = 16e3;

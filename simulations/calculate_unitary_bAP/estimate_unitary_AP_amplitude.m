@@ -1,6 +1,9 @@
 % load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP\unitary_AP_analysis.mat')
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitaryAP_all.mat')
 
+% load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitarySpectrum.mat')
+% pEst = sum(psd*mean(diff(freq)));
+
 load('E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\mtype_abundance.mat','mtype_abundance');
 
 % folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\sampled_mtypes';
@@ -55,10 +58,14 @@ for i = 1:1e3
 end
 
 
-fprintf('Excitatory cell uAP energy: %.1f +/- %.1f zV^2\n',10.^(log10(mean(ebootstrap_Est))+15),10.^(log10(std(ebootstrap_Est))+15))
 
-fprintf('Inhibitory cell uAP energy: %.1f +/- %.1f zV^2\n',10.^(log10(mean(ibootstrap_Est))+15),10.^(log10(std(ibootstrap_Est))+15))
+fprintf('Excitatory cell uAP energy: %.1f +/- %.1f fV^2\n',10.^(log10(mean(bootstrap_Est))+12),10.^(log10(std(ebootstrap_Est))+12))
 
+fprintf('Excitatory cell uAP energy: %.1f +/- %.1f fV^2\n',10.^(log10(mean(ebootstrap_Est))+12),10.^(log10(std(ebootstrap_Est))+12))
+
+fprintf('Inhibitory cell uAP energy: %.1f +/- %.1f fV^2\n',10.^(log10(mean(ibootstrap_Est))+12),10.^(log10(std(ibootstrap_Est))+12))
+
+%{
 figureNB(30,15);
     bar(m_pEst,'EdgeColor','k','FaceColor','k');
     line([1:55;1:55],[s0_pEst;s1_pEst],'color','k')
@@ -148,78 +155,80 @@ figureNB;
     gcaformat
     set(gca,'XTickLabelRotation',45)
 
+%}
 
 
-i0 = find(strcmp(ID,'L6_UTPC'))
-i1 = find(strcmp(ID,'L6_NBC'))
-    temp1 = J(i0);
-    temp2 = pEst(i0);
-    temp3 = ID(i0);
-    temp4 = abundance(i0);
-    J(i0) = J(i1);
-    pEst(i0) = pEst(i1);
-    ID(i0) = ID(i1);
-    abundance(i0) = abundance(i1);
-    J(i1) = temp1;
-    pEst(i1) = temp2;
-    ID(i1) = temp3;
-    abundance(i1) = temp4;
+
+% i0 = find(strcmp(ID,'L6_UTPC'))
+% i1 = find(strcmp(ID,'L6_NBC'))
+%     temp1 = J(i0);
+%     temp2 = pEst(i0);
+%     temp3 = ID(i0);
+%     temp4 = abundance(i0);
+%     J(i0) = J(i1);
+%     pEst(i0) = pEst(i1);
+%     ID(i0) = ID(i1);
+%     abundance(i0) = abundance(i1);
+%     J(i1) = temp1;
+%     pEst(i1) = temp2;
+%     ID(i1) = temp3;
+%     abundance(i1) = temp4;
 
 
-i0 = find(strcmp(ID,'L6_TPC_L4'));
-i1 = find(strcmp(ID,'L6_NBC'))
-    temp1 = J(i0);
-    temp2 = pEst(i0);
-    temp3 = ID(i0);
-    temp4 = abundance(i0);
-    J(i0) = J(i1);
-    pEst(i0) = pEst(i1);
-    ID(i0) = ID(i1);
-    abundance(i0) = abundance(i1);
-    J(i1) = temp1;
-    pEst(i1) = temp2;
-    ID(i1) = temp3;
-    abundance(i1) = temp4;
+% i0 = find(strcmp(ID,'L6_TPC_L4'));
+% i1 = find(strcmp(ID,'L6_NBC'))
+%     temp1 = J(i0);
+%     temp2 = pEst(i0);
+%     temp3 = ID(i0);
+%     temp4 = abundance(i0);
+%     J(i0) = J(i1);
+%     pEst(i0) = pEst(i1);
+%     ID(i0) = ID(i1);
+%     abundance(i0) = abundance(i1);
+%     J(i1) = temp1;
+%     pEst(i1) = temp2;
+%     ID(i1) = temp3;
+%     abundance(i1) = temp4;
 
-i0 = find(strcmp(ID,'L5_TTPC1'))
-i1 = find(strcmp(ID,'L5_NBC'))
-    temp1 = J(i0);
-    temp2 = pEst(i0);
-    temp3 = ID(i0);
-    temp4 = abundance(i0);
-    J(i0) = J(i1);
-    pEst(i0) = pEst(i1);
-    ID(i0) = ID(i1);
-    abundance(i0) = abundance(i1);
-    J(i1) = temp1;
-    pEst(i1) = temp2;
-    ID(i1) = temp3;
-    abundance(i1) = temp4;
+% i0 = find(strcmp(ID,'L5_TTPC1'))
+% i1 = find(strcmp(ID,'L5_NBC'))
+%     temp1 = J(i0);
+%     temp2 = pEst(i0);
+%     temp3 = ID(i0);
+%     temp4 = abundance(i0);
+%     J(i0) = J(i1);
+%     pEst(i0) = pEst(i1);
+%     ID(i0) = ID(i1);
+%     abundance(i0) = abundance(i1);
+%     J(i1) = temp1;
+%     pEst(i1) = temp2;
+%     ID(i1) = temp3;
+%     abundance(i1) = temp4;
 
-figureNB(12,6);
-axes('Position',[0.1, 0.22, 0.8, 0.62])
-    plot(J,pEst,'.k')
-    set(gca,'yscale','log')
-    ylabel(['Unitary AP power (' char(956) 'V^2)'])
-    % xticks(1:55)
-    set(gca,'FontSize',5)
-    % xticklabels(cellfun(@(x)strrep(x,'_','\_'),ID,'UniformOutput',false))
-    gcaformat;
-    xax = get(gca,'xaxis');
-    xlim([0,56])
-    set(gca,'XTickLabelRotation',90)
-    xax.FontSize = 5;
+% figureNB(12,6);
+% axes('Position',[0.1, 0.22, 0.8, 0.62])
+%     plot(J,pEst,'.k')
+%     set(gca,'yscale','log')
+%     ylabel(['Unitary AP power (' char(956) 'V^2)'])
+%     % xticks(1:55)
+%     set(gca,'FontSize',5)
+%     % xticklabels(cellfun(@(x)strrep(x,'_','\_'),ID,'UniformOutput',false))
+%     gcaformat;
+%     xax = get(gca,'xaxis');
+%     xlim([0,56])
+%     set(gca,'XTickLabelRotation',90)
+%     xax.FontSize = 5;
 
-axes('Position',[0.1, 0.9, 0.8, 0.07])
-    scatter(1:55,ones(55,1),max(2,abundance),abundance,'filled');
-    xlim([0,56])
-    axis off
-    idcs = find(abundance>6.5);
-    for i = idcs
-        text(i,2,sprintf('%.1f%c',abundance(i),char(37)),'FontSize',6,'HorizontalAlignment','center');
-        % text(i,2,sprintf('%.1f',abundance(i)),'FontSize',6,'HorizontalAlignment','center');
-    end
-    colormap(flip(copper))
+% axes('Position',[0.1, 0.9, 0.8, 0.07])
+%     scatter(1:55,ones(55,1),max(2,abundance),abundance,'filled');
+%     xlim([0,56])
+%     axis off
+%     idcs = find(abundance>6.5);
+%     for i = idcs
+%         text(i,2,sprintf('%.1f%c',abundance(i),char(37)),'FontSize',6,'HorizontalAlignment','center');
+%         % text(i,2,sprintf('%.1f',abundance(i)),'FontSize',6,'HorizontalAlignment','center');
+%     end
+%     colormap(flip(copper))
 
 
 
@@ -227,12 +236,12 @@ axes('Position',[0.1, 0.9, 0.8, 0.07])
 figureNB(10.4,5);
 axes('Position',[0.14, 0.18, 0.8, 0.61])
     i = find(~ei_type);
-    S = scatter(J(i),pEst(i),8,[0.5,0.5,0.8],'filled','MarkerEdgeColor','k');
+    S = scatter(J(i),(1e6)^2*pEst(i),8,[0.5,0.5,0.8],'filled','MarkerEdgeColor',[0.5,0.5,0.8]/2);
     hold on;
     i = find(ei_type);
-    S = scatter(J(i),pEst(i),10,[0.8,0.5,0.5],'filled','MarkerEdgeColor','k');
+    S = scatter(J(i),(1e6)^2*pEst(i),10,[0.8,0.5,0.5],'filled','MarkerEdgeColor',[0.8,0.5,0.5]/2);
     set(gca,'yscale','log')
-    ylabel(['Unitary AP power (' char(956) 'V^2)'])
+    ylabel(['Unitary AP power (pV^2)'])
     gcaformat;
     xax = get(gca,'xaxis');
     xax.MinorTickValues = 1:55;
@@ -266,11 +275,11 @@ axes('Position',[0.145 0.83 0.28 0.06])
 
 axes('Position',[0.88 0.83 0.02 0.06])
 
-    S = scatter(0,1,12,[0.8,0.5,0.5],'filled','MarkerEdgeColor','k');
+    S = scatter(0,1,12,[0.8,0.5,0.5],'filled','MarkerEdgeColor',[0.8,0.5,0.5]/2);
     text(1,1,'Ex.','FontSize',8,'VerticalAlignment','middle')
 
     hold on;
-    S = scatter(0,0,12,[0.5,0.5,0.8],'filled','MarkerEdgeColor','k');
+    S = scatter(0,0,12,[0.5,0.5,0.8],'filled','MarkerEdgeColor',[0.5,0.5,0.8]/2);
     text(1,0,'In.','FontSize',8,'VerticalAlignment','middle')
     axis off;
     ylim([0,1]);

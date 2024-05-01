@@ -12,7 +12,7 @@ f0 = 10.^[freq1,freq2];
 
 S = -[X(2:2:end),Y(2:2:end)];
 S = maxnormalize(S);
-r = regress([log10(2e3);log10(8)],[1,1;0.0476,1])
+r = regress([log10(2e3);log10(8)],[1,1;0.0476,1]);
 S = 10.^(r(1)*S+r(2));
 
 if(nargin>0 && toPlot)

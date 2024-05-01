@@ -1,15 +1,11 @@
 
-folder = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\sampled_mtypes';
-F = dir(folder);
-F = F(3:end);
-
 EI_vec = {'01','1.5','2.1','3.1','4.5','6.6','9.7','14.1','20.6','30'};
 EI = cellfun(@(x) str2num(x),EI_vec);
 iCtx = 16e3;
 
 i=50;
 % i=60;
-folder0 = fullfile(folder,F(i).name,'matlab_recordings');
+folder0 = 'E:\Research_Projects\005_Aperiodic_EEG\unitary_APs\data\simulations\bAP_unitary_response\unitary_AP_EI_ratio\L6_BPC_cADpyr231_3\matlab_recordings';
 clrs = flipud(jet(10));
 
 meanQx = [];
